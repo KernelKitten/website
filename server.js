@@ -1,40 +1,20 @@
-const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
-const fs = require('fs').promises;
+const db = require('./db');
 
-let pool;
-
-async function loadConfig()
-{
-  const fileContent = await fs.readFile('./appsettings.json', 'utf8');
-  return JSON.parse(fileContent);
-}
-
-
-async function connect()
-{
-  const config = await loadConfig();
-  const dbConfig = config.Connection;
-
-  pool = new Pool({
-    user: dbConfig.user,
-    host: dbConfig.host,
-    database: dbConfig.database,
-    password: dbConfig.password,
-    port: dbConfig.port,
-  });
-
-  await pool.query('SELECT 1');
-  console.log('Pool успешно инициализирован!');
-}
-
+const app = express();
+const port = 3000;
 
 async function start()
 {
-    await connect();
+  await db.connect();
+
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  app.listen(port, () =>
+    {
+        console.log(`🚀 Server started: http://localhost:${port}`);
+    });
 }
 
-module.exports = start;
+module.exports = { start };
